@@ -1,7 +1,4 @@
-from flask import Flask, request, jsonify
-from helpers.dbhelpers import run_query
-
-app = Flask(__name__)
+from app import app
 
 import sys
 
