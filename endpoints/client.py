@@ -2,11 +2,11 @@ from app import app
 from flask import request, jsonify
 from helpers.dbhelpers import run_query
 import bcrypt
-import hashlib
 
 
 # client get request
 @app.get('/api/client')
+# TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
 def client_get():
     client_list = run_query("SELECT * FROM client")
     resp = []
