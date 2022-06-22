@@ -4,7 +4,7 @@ from helpers.dbhelpers import run_query
 
 @app.get('/api/menu')
 def menu_get():
-    menu_info = run_query("SELECT * FROM menu_items")
+    menu_list = run_query("SELECT * FROM menu_items")
     resp = []
     for item in menu_list:
         menu_obj= {}
