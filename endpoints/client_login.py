@@ -22,9 +22,12 @@ def client_login():
     return jsonify("Email and password accepted, user logged in"), 201
 
 
-@app.delete('/api/client-login')
-def client_logout():
-    pass
+# @app.delete('/api/client-login')
+# def client_logout():
+#     # TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
+#     data = request.json
+#     client_token = data.get("sessionId")
+#     run_query("DELETE FROM client_session WHERE token=? VALUES(?)", [client_token])
 
 
 

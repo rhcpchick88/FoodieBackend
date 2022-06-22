@@ -21,6 +21,10 @@ def restaurant_login():
     #TODO  if not argument???? for login fail? check if email and pw matches? using bcrypt error 401
     return jsonify("Email and password accepted, user logged in"), 201
 
-@app.delete('/api/restaurant-login')
-def restaurant_logout():
-    pass
+
+# @app.delete('/api/restaurant-login')
+# def restaurant_logout():
+#     # TODO CONNECT TO RESTAURANT LOGIN TO GET TOKEN
+#     data = request.json
+#     restaurant_token = data.get("sessionId")
+#     run_query("DELETE FROM restaurant_session WHERE token=? VALUES(?)", [restaurant_token])
