@@ -1,7 +1,7 @@
-import uuid
 from app import app
 from flask import jsonify, request
 from helpers.dbhelpers import run_query
+import uuid
 
 # login post request
 @app.post('/api/client-login')

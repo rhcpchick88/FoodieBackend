@@ -5,7 +5,7 @@ import uuid
 
 # login post request
 @app.post('/api/restaurant-login')
-def client_login():
+def restaurant_login():
     data = request.json
     email = data.get('email')
     password = data.get('password')
