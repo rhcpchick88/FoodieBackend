@@ -14,9 +14,9 @@ def client_login():
     if not password:
         return jsonify ("Missing required argument : password"), 422
     run_query("SELECT FROM client WHERE email=? and password=? VALUES(?,?)", [email,password])
-    token = uuid.uuid4
+    client_token = uuid.uuid4().hex
     print(uuid.uuid4)
-    run_query("INSERT INTO client_session (token) VALUES(?)", [token])
+    run_query("INSERT INTO client_session (token) VALUES(?)", [client_token])
     #TODO  if not argument???? for login fail
     return jsonify("Email and password accepted, user logged in"), 200
 
