@@ -21,8 +21,9 @@ def client_get():
         client_obj["pictureUrl"] = client[7]
         resp.append(client_obj)
     return jsonify(client_list), 200
+#TODO 401 error code 
 
-# client post request
+# client post request **does not need token!!**
 @app.post('/api/client')
 def client_post():
     data = request.json
@@ -48,3 +49,11 @@ def client_post():
     print(hashed_password)
     run_query("INSERT INTO client (email, username, password, first_name, last_name, picture_url) VALUES (?,?,?,?,?,?)", [email, username, hashed_password, firstName, lastName, pictureUrl])
     return jsonify("Client added successfully"), 201
+
+@app.patch('/api/client')
+def client_update():
+    pass
+
+@app.delete('/api/client')
+def client_delete():
+    pass

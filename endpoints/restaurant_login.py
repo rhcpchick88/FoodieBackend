@@ -2,6 +2,7 @@ from app import app
 from flask import jsonify, request
 from helpers.dbhelpers import run_query
 import uuid
+import bcrypt
 
 # login post request
 @app.post('/api/restaurant-login')
@@ -17,5 +18,9 @@ def restaurant_login():
     restaurant_token = uuid.uuid4().hex
     print(uuid.uuid4)
     run_query("INSERT INTO restaurant_session (token) VALUES(?)", [restaurant_token])
-    #TODO  if not argument???? for login fail? check if email and pw matches?
-    return jsonify("Email and password accepted, user logged in"), 200
+    #TODO  if not argument???? for login fail? check if email and pw matches? using bcrypt error 401
+    return jsonify("Email and password accepted, user logged in"), 201
+
+@app.delete('/api/restaurant-login')
+def restaurant_logout():
+    pass

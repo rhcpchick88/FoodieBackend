@@ -21,8 +21,9 @@ def restaurant_get():
         restaurant_obj["city"] = restaurant[9]
         resp.append(restaurant_obj)
     return jsonify(restaurant_list), 200
+#TODO 401 error code
 
-# restaurant post request
+# restaurant post request **does not need token!!** 
 @app.post('/api/restaurant')
 def restaurant_post():
     data = request.json
@@ -55,3 +56,12 @@ def restaurant_post():
     print(hashed_password)
     run_query("INSERT INTO restaurant (name, email, password, address, phone_num, bio, banner_url, profile_url, city) VALUES (?,?,?,?,?,?,?,?,?)", [name, email, hashed_password, address, phoneNum, bio, bannerUrl, profileUrl, city])
     return jsonify("Restaurant added successfully"), 201
+
+
+@app.patch('/api/restaurant')
+def restaurant_update():
+    pass
+
+@app.delete('/api/restaurant')
+def restaurant_delete():
+    pass

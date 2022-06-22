@@ -2,6 +2,7 @@ from app import app
 from flask import jsonify, request
 from helpers.dbhelpers import run_query
 import uuid
+import bcrypt
 
 # login post request
 @app.post('/api/client-login')
@@ -17,11 +18,13 @@ def client_login():
     client_token = uuid.uuid4().hex
     print(uuid.uuid4)
     run_query("INSERT INTO client_session (token) VALUES(?)", [client_token])
-    #TODO  if not argument???? for login fail
-    return jsonify("Email and password accepted, user logged in"), 200
+    #TODO  if not argument???? for login fail? using bcrypt to compare passwords error 401
+    return jsonify("Email and password accepted, user logged in"), 201
 
 
-
+@app.delete('/api/client-login')
+def client_logout():
+    pass
 
 
 
