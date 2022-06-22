@@ -1,3 +1,4 @@
+import uuid
 from app import app
 from flask import jsonify, request
 from helpers.dbhelpers import run_query
@@ -5,7 +6,25 @@ from helpers.dbhelpers import run_query
 # login post request
 @app.post('/api/client-login')
 def client_login():
-    pass
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    if not email:
+        return jsonify ("Missing required argument : email"), 422
+    if not password:
+        return jsonify ("Missing required argument : password"), 422
+    run_query("SELECT FROM client WHERE email=? and password=? VALUES(?,?)", [email,password])
+    token = uuid.uuid4
+    print(uuid.uuid4)
+    run_query("INSERT INTO client_session (token) VALUES(?)", [token])
+    return jsonify("Email and password accepted, user logged in"), 200
+
+
+
+
+
+
+
 
 # login logic:
 # user gives you a username and pw
