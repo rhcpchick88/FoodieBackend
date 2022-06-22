@@ -17,6 +17,7 @@ def client_login():
     token = uuid.uuid4
     print(uuid.uuid4)
     run_query("INSERT INTO client_session (token) VALUES(?)", [token])
+    #TODO  if not argument???? for login fail
     return jsonify("Email and password accepted, user logged in"), 200
 
 
