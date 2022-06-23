@@ -76,4 +76,7 @@ def client_update():
 
 @app.delete('/api/client')
 def client_delete():
-    pass
+    data = request.json
+    clientId = data.get("clientId")
+    run_query("DELETE FROM client WHERE id=?"), [clientId]
+    return jsonify("Profile deleted successfully"), 204
