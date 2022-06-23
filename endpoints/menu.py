@@ -35,9 +35,25 @@ def menu_post():
     return jsonify("Menu item added successfully"), 201
 
 @app.patch('/api/menu')
+# TODO CONNECT TO RESTO LOGIN TO GET TOKEN
 def menu_patch():
-    pass
+    data = request.json
+    name = data.get("name")
+    description = data.get("description")
+    price = data.get("price")
+    imageUrl = data.get("imageUrl")
+    if not name:
+        return jsonify ("Missing required argument : name"), 422
+    if not description:
+        return jsonify ("Missing required argument : description"), 422
+    if not price:
+        return jsonify ("Missing required argument : price"), 422
+    run_query("UPDATE menu_items (name, description, price, image_url) VALUES (?,?,?,?) WHERE id=?", [name, description, price, imageUrl])
+    return jsonify("Menu item updated successfully"), 204
 
 @app.delete('/api/menu')
 def menu_delete():
-    pass
+    data = request.json
+    menuId = data.get("menuId")
+    run_query("DELETE FROM menu_items WHERE id=?"), [menuId]
+    return jsonify("Menu item deleted successfully"), 204
