@@ -51,8 +51,28 @@ def client_post():
     return jsonify("Client added successfully"), 201
 
 @app.patch('/api/client')
+# TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
 def client_update():
-    pass
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    firstName = data.get("firstName")
+    lastName = data.get("lastName")
+    pictureUrl = data.get("pictureUrl")
+    if not username:
+        return jsonify ("Missing required argument : username"), 422
+    if not password:
+        return jsonify ("Missing required argument : password"), 422
+    if not firstName:
+        return jsonify ("Missing required argument : first name"), 422
+    if not lastName:
+        return jsonify ("Missing required argument : last name)"), 422
+    clientPassword = password
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(clientPassword.encode(), salt)
+    print(hashed_password)
+    run_query("UPDATE client SET (username, password, first_name, last_name, picture_url) VALUES (?,?,?,?,?) WHERE id=?", [username, hashed_password, firstName, lastName, pictureUrl])
+    return jsonify("Client updated successfully"), 201
 
 @app.delete('/api/client')
 def client_delete():
