@@ -2,6 +2,7 @@ from app import app
 from flask import request, jsonify
 from helpers.dbhelpers import run_query
 import bcrypt
+import uuid
 
 
 # client get request
@@ -23,7 +24,7 @@ def client_get():
     return jsonify(client_list), 200
 #TODO 401 error code 
 
-# client post request **does not need token!!**
+# client post request **does not need token!! **
 @app.post('/api/client')
 def client_post():
     data = request.json
@@ -48,6 +49,14 @@ def client_post():
     hashed_password = bcrypt.hashpw(clientPassword.encode(), salt)
     print(hashed_password)
     run_query("INSERT INTO client (email, username, password, first_name, last_name, picture_url) VALUES (?,?,?,?,?,?)", [email, username, hashed_password, firstName, lastName, pictureUrl])
+    client_token = uuid.uuid4().hex
+    print(uuid.uuid4)
+    client_check = run_query("SELECT id FROM client WHERE email=?",[email])
+    response = client_check[0]
+    client_id = response[0]
+    client_token = str(uuid.uuid4().hex)
+    print(client_token)
+    run_query("INSERT INTO client_session (id, token) VALUES (?,?)", [client_id, client_token])
     return jsonify("Client added successfully"), 201
 
 @app.patch('/api/client')

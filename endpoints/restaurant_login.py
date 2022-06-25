@@ -22,9 +22,26 @@ def restaurant_login():
     return jsonify("Email and password accepted, user logged in"), 201
 
 
-# @app.delete('/api/restaurant-login')
-# def restaurant_logout():
-#     # TODO CONNECT TO RESTAURANT LOGIN TO GET TOKEN
-#     data = request.json
-#     restaurant_token = data.get("sessionId")
-#     run_query("DELETE FROM restaurant_session WHERE token=? VALUES(?)", [restaurant_token])
+@app.delete('/api/restaurant-login')
+def restaurant_logout():
+    # TODO CONNECT TO RESTAURANT LOGIN TO GET TOKEN
+    data = request.json
+    restaurant_token = data.get("token")
+    if token == 1:
+        run_query("DELETE FROM restaurant_session WHERE token=? VALUES(?)", [restaurant_token])
+        return jsonify ("Logout successful")
+    else:
+        return jsonify("Error logging out")
+
+
+
+
+# per mark
+# logic of token authorizaiton. 
+# when a specific operation requires a user to identify themselves they do it with a token.
+# you cannot just let anyone patch a client or resto etc etc etc.
+# request a user to send a token. FE sends a token, reference the session table and select
+# the row with that token, if that token exists grab the ID associated to that token and that
+# is how you know who made the request.Token is good enough verification for the user identification
+# if it returns nothing it is not valid
+# once you have that you have the ID and you can do whatever operation is required.

@@ -11,24 +11,40 @@ def client_login():
     email = data.get('email')
     password = data.get('password')
     if not email:
-        return jsonify ("Missing required argument : email"), 422
+        return jsonify ("Missing required argument : email"), 401
     if not password:
-        return jsonify ("Missing required argument : password"), 422
-    run_query("SELECT FROM client WHERE email=? and password=? VALUES(?,?)", [email,password])
-    client_token = uuid.uuid4().hex
-    print(uuid.uuid4)
-    run_query("INSERT INTO client_session (token) VALUES(?)", [client_token])
-    #TODO  if not argument???? for login fail? using bcrypt to compare passwords error 401
-    return jsonify("Email and password accepted, user logged in"), 201
+        return jsonify ("Missing required argument : password"), 401
+    password_check = run_query("SELECT password FROM client WHERE email=?", [email])
+    if True:
+    # if bcrypt.checkpw(password.encode(), password_check.encode()):
+        client_token = uuid.uuid4().hex
+        print(uuid.uuid4)
+        client_check = run_query("SELECT id FROM client WHERE email=?",[email])
+        response = client_check[0]
+        client_id = response[0]
+        client_token = str(uuid.uuid4().hex)
+        print(client_token)
+        run_query("INSERT INTO client_session (id, token) VALUES (?,?)", [client_id, client_token])
+        return jsonify("Email and password accepted, user logged in"), 201
+    else:
+        return jsonify("Error logging in, invalid password"), 401
+
+        # return jsonify("Email and password combination not valid. Please try again.")
+        #TODO  if not argument???? for login fail? using bcrypt to compare passwords error 401
 
 
-# @app.delete('/api/client-login')
-# def client_logout():
-#     # TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
-#     data = request.json
-#     client_token = data.get("sessionId")
-#     run_query("DELETE FROM client_session WHERE token=? VALUES(?)", [client_token])
 
+@app.delete('/api/client-login')
+def client_logout():
+    # TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
+    data = request.json
+    client_token = data.get("token")
+    if token == 1:
+        run_query("DELETE FROM client_session WHERE token=? VALUES(?)", [client_token])
+        return jsonify ("Logout successful")
+    else: 
+        return jsonify("Error logging out")
+    
 
 
 
