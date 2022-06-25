@@ -15,8 +15,9 @@ def client_login():
     if not password:
         return jsonify ("Missing required argument : password"), 401
     password_check = run_query("SELECT password FROM client WHERE email=?", [email])
-    if True:
-    # if bcrypt.checkpw(password.encode(), password_check.encode()):
+    response = password_check[0]
+    client_password = response[0]
+    if bcrypt.checkpw(password.encode(), client_password.encode()):
         client_token = uuid.uuid4().hex
         print(uuid.uuid4)
         client_check = run_query("SELECT id FROM client WHERE email=?",[email])
@@ -27,10 +28,7 @@ def client_login():
         run_query("INSERT INTO client_session (id, token) VALUES (?,?)", [client_id, client_token])
         return jsonify("Email and password accepted, user logged in"), 201
     else:
-        return jsonify("Error logging in, invalid password"), 401
-
-        # return jsonify("Email and password combination not valid. Please try again.")
-        #TODO  if not argument???? for login fail? using bcrypt to compare passwords error 401
+        return jsonify("Error logging in, email and password combination not valid."), 401
 
 
 
