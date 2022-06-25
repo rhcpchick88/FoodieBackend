@@ -34,11 +34,15 @@ def client_login():
 
 @app.delete('/api/client-login')
 def client_logout():
-    # TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
-    data = request.json
-    client_token = data.get("token")
-    if token == 1:
-        run_query("DELETE FROM client_session WHERE token=? VALUES(?)", [client_token])
+    token = request.headers.get("Token")
+    if not token:
+        return jsonify ("Error, missing token"), 401
+    client_check = run_query("SELECT id from client_session WHERE token=?",[token])
+    response = client_check[0]
+    client_id = response[0]
+    print(client_id)
+    if client_id == True:
+        run_query("DELETE FROM client_session WHERE id=?", [client_id])
         return jsonify ("Logout successful")
     else: 
         return jsonify("Error logging out")

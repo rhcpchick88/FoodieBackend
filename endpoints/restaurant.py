@@ -2,6 +2,7 @@ from app import app
 from flask import request, jsonify
 from helpers.dbhelpers import run_query
 import bcrypt
+import uuid
 
 #restaurant get request - doesnt need token as its public info
 @app.get('/api/restaurant')
@@ -54,8 +55,22 @@ def restaurant_post():
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(restaurantPassword.encode(), salt)
     print(hashed_password)
-    run_query("INSERT INTO restaurant (name, email, password, address, phone_num, bio, banner_url, profile_url, city) VALUES (?,?,?,?,?,?,?,?,?)", [name, email, hashed_password, address, phoneNum, bio, bannerUrl, profileUrl, city])
-    return jsonify("Restaurant added successfully"), 201
+    city_check = run_query("SELECT id FROM city WHERE name=?", [city])
+    if not city_check:
+        return jsonify("Error, must enter correct city name")
+    else:    
+        run_query("INSERT INTO restaurant (name, email, password, address, phone_num, bio, banner_url, profile_url, city) VALUES (?,?,?,?,?,?,?,?,?)", [name, email, hashed_password, address, phoneNum, bio, bannerUrl, profileUrl, city])
+        restaurant_token = uuid.uuid4().hex
+        print(uuid.uuid4)
+        restaurant_check = run_query("SELECT id FROM restaurant WHERE email=?",[email])
+        print(restaurant_check)
+        response = restaurant_check[0]
+        restaurant_id = response[0]
+        restaurant_token = str(uuid.uuid4().hex)
+        print(restaurant_token)
+        run_query("INSERT INTO restaurant_session (id, token) VALUES (?,?)", [restaurant_id, restaurant_token])
+        return jsonify("Restaurant added successfully"), 201
+#TODO email check - unique
 
 
 @app.patch('/api/restaurant')
