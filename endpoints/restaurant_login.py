@@ -42,6 +42,6 @@ def restaurant_logout():
     print(restaurant_id)
     if restaurant_id == True:
         run_query("DELETE FROM restaurant_session WHERE id=?",[restaurant_id])
-        return jsonify ("Logout successful")
+        return jsonify ("Logout successful"), 204
     else:
-        return jsonify("Error logging out")
+        return jsonify("Error logging out"), 401

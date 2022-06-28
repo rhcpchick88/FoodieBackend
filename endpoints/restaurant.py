@@ -56,9 +56,10 @@ def restaurant_post():
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(restaurantPassword.encode(), salt)
     print(hashed_password)
+    # the city needs to exist in the DB in order fr the restaurant to be posted.
     city_check = run_query("SELECT id FROM city WHERE name=?", [city])
     if not city_check:
-        return jsonify("Error, must enter correct city name")
+        return jsonify("Error, must enter correct city name"), 422
     else:    
         run_query("INSERT INTO restaurant (name, email, password, address, phone_num, bio, banner_url, profile_url, city) VALUES (?,?,?,?,?,?,?,?,?)", [name, email, hashed_password, address, phoneNum, bio, bannerUrl, profileUrl, city])
         restaurant_token = uuid.uuid4().hex
@@ -75,6 +76,7 @@ def restaurant_post():
 #TODO email check - unique, phone check 
 @app.patch('/api/restaurant')
 def restaurant_update():
+    # requesting a token header to prove restaurant is logged in to make this request.
     token = request.headers.get("Token")
     if not token:
         return jsonify ("Not authorized"), 401
@@ -83,7 +85,7 @@ def restaurant_update():
         response = token_check[0]
         restaurant_id = response[0]
     if not restaurant_id:
-        return jsonify("Error updating restaurant information, invalid login session")
+        return jsonify("Error updating restaurant information, invalid login session"), 401
     else:
         data = request.json
         name = data.get("name")
@@ -96,11 +98,15 @@ def restaurant_update():
         city = data.get("city")
         token_check = run_query("SELECT id FROM restaurant_session WHERE token=?", [token])
         response = token_check[0]
-        restaurant_id = response[0]        
+        restaurant_id = response[0]     
+        # I updated these individually as all the fields do not have to be updated
+        # at the same time. What if they only want to update the name, or password etc.
+        # EMAIL CANNOT BE CHANGED.
         if name:
             run_query("UPDATE restaurant SET name=? WHERE id=?", [name, restaurant_id])
             return jsonify("Restaurant name updated successfully"), 201
         if password:
+            # encrypting the password for DB entry
             restaurantPassword = password
             salt = bcrypt.gensalt()
             hashed_password = bcrypt.hashpw(restaurantPassword.encode(), salt)
@@ -124,9 +130,9 @@ def restaurant_update():
         if city:
             city_check = run_query("SELECT id FROM city WHERE name=?", [city])
             if not city_check:
-                return jsonify("Error, must enter correct city name")            
+                return jsonify("Error, must enter correct city name"), 422         
             else:
                 run_query("UPDATE restaurant SET city=? WHERE id=?", [city, restaurant_id])
                 return jsonify("Restaurant city updated successfully"), 201                
         else:
-            return jsonify("Error updating restaurant")
+            return jsonify("Error updating restaurant"), 401

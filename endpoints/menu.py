@@ -18,8 +18,10 @@ def menu_get():
     return jsonify(menu_list), 200
 #TODO 401 error code 
 
+# creating a menu item.
 @app.post('/api/menu')
 def menu_post():
+    # requesting a token header to prove restaurant is logged in to make this request.    
     token = request.headers.get("Token")
     if not token:
         return jsonify ("Error, missing token"), 401
@@ -27,7 +29,7 @@ def menu_post():
     response = restaurant_check[0]
     restaurant_id = response[0]
     if not restaurant_id:
-        return jsonify("Error adding menu item")
+        return jsonify("Error adding menu item"),401
     else:    
         data = request.json
         name = data.get("name")
@@ -47,8 +49,10 @@ def menu_post():
         run_query("INSERT INTO menu_items (name, description, price, image_url, restaurant_id) VALUES (?,?,?,?,?)", [name, description, price, imageUrl, restaurant_id])
         return jsonify("Menu item added successfully"), 201
 
+# updating a menu item.
 @app.patch('/api/menu')
 def menu_patch():
+    # requesting a token header to prove restaurant is logged in to make this request.    
     token = request.headers.get("Token")
     if not token:
         return jsonify ("Error, missing token"), 401
@@ -67,22 +71,37 @@ def menu_patch():
         restaurant_id = response[0]          
         if name:
             run_query("UPDATE menu SET name=? WHERE id=?", [name, restaurant_id])
-            return jsonify("Name updated successfully")
+            return jsonify("Name updated successfully"), 200
         if description:
             run_query("UPDATE menu SET description=? WHERE id=?", [description, restaurant_id])
-            return jsonify("Description updated successfully")
+            return jsonify("Description updated successfully"), 200
         if price:
             run_query("UPDATE menu SET price=? WHERE id=?", [price, restaurant_id])
-            return jsonify("Price updated successfully")
+            return jsonify("Price updated successfully"), 200
         if imageUrl:
             run_query("UPDATE menu SET image_url WHERE id=?", [imageUrl, restaurant_id])
-            return jsonify("Image URL updated successfully")
+            return jsonify("Image URL updated successfully"), 200
         else:
-            return jsonify("Error updating menu item")
+            return jsonify("Error updating menu item"), 422
 
+# deleting a menu item.
 @app.delete('/api/menu')
 def menu_delete():
-    data = request.json
-    menuId = data.get("menuId")
-    run_query("DELETE FROM menu_items WHERE id=?"), [menuId]
-    return jsonify("Menu item deleted successfully"), 204
+    # requesting a token header to prove restaurant is logged in to make this request.    
+    token = request.headers.get("Token")
+    if not token:
+        return jsonify ("Not authorized"), 401
+    else:
+        token_check = run_query("SELECT id FROM restaurant_session WHERE token=?", [token])
+        response = token_check[0]
+        restaurant_id = response[0]
+        if not restaurant_id:
+            return jsonify("Error, invalid restaurant ID"), 401
+        else:
+            data = request.json
+            item_id = data.get("menuId")
+            if not item_id:
+                return jsonify("Error, no menu item ID."), 422
+            menu_id = int(item_id)
+            run_query("DELETE FROM menu_items WHERE id=?", [menu_id])
+            return jsonify("Menu item deleted successfully"), 204

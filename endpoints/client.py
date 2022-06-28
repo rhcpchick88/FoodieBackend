@@ -8,6 +8,7 @@ import uuid
 # client get request
 @app.get('/api/client')
 def client_get():
+    # requesting a token header to prove client is logged in to make this request.
     token = request.headers.get("Token")
     if not token:
         return jsonify ("Not authorized"), 401
@@ -28,9 +29,10 @@ def client_get():
             client_obj["pictureUrl"] = client[7]
             resp.append(client_obj)
         return jsonify(client_list), 200
-#TODO 401 error code 
+
 
 # client post request **does not need token!! **
+
 #TODO email check - unique
 @app.post('/api/client')
 def client_post():
@@ -51,6 +53,7 @@ def client_post():
         return jsonify ("Missing required argument : first name"), 422
     if not lastName:
         return jsonify ("Missing required argument : last name)"), 422
+    # hashing and salting the entered password for DB encryption.
     clientPassword = password
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(clientPassword.encode(), salt)
@@ -66,9 +69,11 @@ def client_post():
     run_query("INSERT INTO client_session (id, token) VALUES (?,?)", [client_id, client_token])
     return jsonify("Client added successfully"), 201
 
+
 #TODO email check - unique
 @app.patch('/api/client')
 def client_update():
+    # requesting a token header to prove client is logged in to make this request.
     token = request.headers.get("Token")
     if not token:
         return jsonify ("Not authorized"), 401
@@ -77,7 +82,7 @@ def client_update():
         response = token_check[0]
         client_id = response[0]
     if not client_id:
-        return jsonify("Error updating client information, invalid login session")
+        return jsonify("Error updating client information, invalid login session"),401
     else:
         data = request.json
         username = data.get("username")
@@ -88,7 +93,10 @@ def client_update():
         token_check = run_query("SELECT id FROM client_session WHERE token=?", [token])
         response = token_check[0]
         client_id = response[0]
-        print(client_id)        
+        print(client_id)     
+        # I updated these individually as all the fields do not have to be updated
+        # at the same time. What if they only want to update the name, or password etc.
+        # EMAIL CANNOT BE CHANGED.   
         if username:
             run_query("UPDATE client SET username=? WHERE id=?", [username, client_id])
             return jsonify("Client username updated successfully"), 201
@@ -109,10 +117,12 @@ def client_update():
             run_query("UPDATE client SET picture_url=? WHERE id=?", [pictureUrl, client_id])            
             return jsonify("Client picture URL updated successfully"), 201
         else:
-            return jsonify("Error updating client")          
+            return jsonify("Error updating client"),500       
 
+# delete client profile.
 @app.delete('/api/client')
 def client_delete():
+    # requesting a token header to prove client is logged in to make this request.    
     token = request.headers.get("Token")
     if not token:
         return jsonify ("Not authorized"), 401
@@ -121,7 +131,7 @@ def client_delete():
         response = token_check[0]
         client_id = response[0]
         if not client_id:
-            return jsonify("Error deleting profile")
+            return jsonify("Error deleting profile"),401
         else:
             token_check = run_query("SELECT id FROM client_session WHERE token=?", [token])
             response = token_check[0]
