@@ -7,21 +7,27 @@ import uuid
 
 # client get request
 @app.get('/api/client')
-# TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
 def client_get():
-    client_list = run_query("SELECT * FROM client")
-    resp = []
-    for client in client_list:
-        client_obj= {}
-        client_obj["clientId"] = client[0]
-        client_obj["email"] = client[1]        
-        client_obj["username"] = client[2]
-        client_obj["firstName"] = client[4]
-        client_obj["lastName"] = client[5]
-        client_obj["createdAt"] = client[6]        
-        client_obj["pictureUrl"] = client[7]
-        resp.append(client_obj)
-    return jsonify(client_list), 200
+    token = request.headers.get("Token")
+    if not token:
+        return jsonify ("Not authorized"), 401
+    else:
+        token_check = run_query("SELECT id FROM client_session WHERE token=?", [token])
+        response = token_check[0]
+        client_id = response[0]        
+        client_list = run_query("SELECT * FROM client WHERE id=?",[client_id])
+        resp = []
+        for client in client_list:
+            client_obj= {}
+            client_obj["clientId"] = client[0]
+            client_obj["email"] = client[1]        
+            client_obj["username"] = client[2]
+            client_obj["firstName"] = client[4]
+            client_obj["lastName"] = client[5]
+            client_obj["createdAt"] = client[6]        
+            client_obj["pictureUrl"] = client[7]
+            resp.append(client_obj)
+        return jsonify(client_list), 200
 #TODO 401 error code 
 
 # client post request **does not need token!! **
@@ -60,32 +66,64 @@ def client_post():
     return jsonify("Client added successfully"), 201
 
 @app.patch('/api/client')
-# TODO CONNECT TO CLIENT LOGIN TO GET TOKEN
 def client_update():
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
-    firstName = data.get("firstName")
-    lastName = data.get("lastName")
-    pictureUrl = data.get("pictureUrl")
-    if not username:
-        return jsonify ("Missing required argument : username"), 422
-    if not password:
-        return jsonify ("Missing required argument : password"), 422
-    if not firstName:
-        return jsonify ("Missing required argument : first name"), 422
-    if not lastName:
-        return jsonify ("Missing required argument : last name)"), 422
-    clientPassword = password
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(clientPassword.encode(), salt)
-    print(hashed_password)
-    run_query("UPDATE client SET (username, password, first_name, last_name, picture_url) VALUES (?,?,?,?,?) WHERE id=?", [username, hashed_password, firstName, lastName, pictureUrl])
-    return jsonify("Client updated successfully"), 201
+    token = request.headers.get("Token")
+    if not token:
+        return jsonify ("Not authorized"), 401
+    else:
+        token_check = run_query("SELECT id FROM client_session WHERE token=?", [token])
+        response = token_check[0]
+        client_id = response[0]
+    if not client_id:
+        return jsonify("Error updating client information, invalid login session")
+    else:
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+        firstName = data.get("firstName")
+        lastName = data.get("lastName")
+        pictureUrl = data.get("pictureUrl")
+        token_check = run_query("SELECT id FROM client_session WHERE token=?", [token])
+        response = token_check[0]
+        client_id = response[0]
+        print(client_id)        
+        if username:
+            run_query("UPDATE client SET username=? WHERE id=?", [username, client_id])
+            return jsonify("Client username updated successfully"), 201
+        if password:
+            clientPassword = password
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(clientPassword.encode(), salt)
+            print(hashed_password)            
+            run_query("UPDATE client SET password=? WHERE id=?", [hashed_password, client_id])
+            return jsonify("Client password updated successfully"), 201            
+        if firstName:
+            run_query("UPDATE client SET first_name=? WHERE id=?", [firstName, client_id])
+            return jsonify("Client first name updated successfully"), 201              
+        if lastName:
+            run_query("UPDATE client SET last_name=? WHERE id=?", [lastName, client_id])
+            return jsonify("Client last name updated successfully"), 201              
+        if pictureUrl:
+            run_query("UPDATE client SET picture_url=? WHERE id=?", [pictureUrl, client_id])            
+            return jsonify("Client picture URL updated successfully"), 201
+        else:
+            return jsonify("Error updating client")          
 
 @app.delete('/api/client')
 def client_delete():
-    data = request.json
-    clientId = data.get("clientId")
-    run_query("DELETE FROM client WHERE id=?"), [clientId]
-    return jsonify("Profile deleted successfully"), 204
+    token = request.headers.get("Token")
+    if not token:
+        return jsonify ("Not authorized"), 401
+    else:
+        token_check = run_query("SELECT id FROM client_session WHERE token=?", [token])
+        response = token_check[0]
+        client_id = response[0]
+        if not client_id:
+            return jsonify("Error deleting profile")
+        else:
+            token_check = run_query("SELECT id FROM client_session WHERE token=?", [token])
+            response = token_check[0]
+            client_id = response[0]
+            run_query("DELETE FROM client_session WHERE id=?", [client_id])
+            run_query("DELETE FROM client WHERE id=?", [client_id])
+            return jsonify("Profile deleted successfully, logged out"), 204
