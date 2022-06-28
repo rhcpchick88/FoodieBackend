@@ -116,6 +116,11 @@ def restaurant_update():
         if bio:
             run_query("UPDATE restaurant SET bio=? WHERE id=?", [bio, restaurant_id])
             return jsonify("Restaurant bio updated successfully"), 201
+        if bannerUrl:
+            run_query("UPDATE restaurant SET banner_url=? WHERE id=?", [bannerUrl, restaurant_id])
+            return jsonify("Restaurant banner URL updated successfully"), 201
+        if profileUrl:
+            run_query("UPDATE restaurant SET profile_url=? WHERE id=?", [profileUrl, restaurant_id])
         if city:
             city_check = run_query("SELECT id FROM city WHERE name=?", [city])
             if not city_check:
