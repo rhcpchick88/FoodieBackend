@@ -31,6 +31,7 @@ def client_get():
 #TODO 401 error code 
 
 # client post request **does not need token!! **
+#TODO email check - unique
 @app.post('/api/client')
 def client_post():
     data = request.json
@@ -65,6 +66,7 @@ def client_post():
     run_query("INSERT INTO client_session (id, token) VALUES (?,?)", [client_id, client_token])
     return jsonify("Client added successfully"), 201
 
+#TODO email check - unique
 @app.patch('/api/client')
 def client_update():
     token = request.headers.get("Token")

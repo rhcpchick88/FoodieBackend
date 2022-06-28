@@ -24,7 +24,8 @@ def restaurant_get():
     return jsonify(restaurant_list), 200
 #TODO 401 error code
 
-# restaurant post request **does not need token!!** 
+# restaurant post request **does not need token!!**
+#TODO email check - unique, phone check 
 @app.post('/api/restaurant')
 def restaurant_post():
     data = request.json
@@ -70,35 +71,57 @@ def restaurant_post():
         print(restaurant_token)
         run_query("INSERT INTO restaurant_session (id, token) VALUES (?,?)", [restaurant_id, restaurant_token])
         return jsonify("Restaurant added successfully"), 201
-#TODO email check - unique
 
-
+#TODO email check - unique, phone check 
 @app.patch('/api/restaurant')
 def restaurant_update():
-    data = request.json
-    name = data.get("name")
-    password = data.get("password")    
-    address = data.get("address")
-    phoneNum = data.get("phoneNum")
-    bio = data.get("bio")
-    bannerUrl = data.get("bannerUrl")
-    profileUrl = data.get("profileUrl")
-    city = data.get("city")
-    if not name:
-        return jsonify ("Missing required argument : name"), 422
-    if not password:
-        return jsonify ("Missing required argument : password"), 422
-    if not address:
-        return jsonify ("Missing required argument : address"), 422
-    if not phoneNum:
-        return jsonify ("Missing required argument : phone number)"), 422
-    if not bio:
-        return jsonify ("Missing required argument : bio"), 422
-    if not city:
-        return jsonify ("Missing required argument : city"), 422
-    restaurantPassword = password
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(restaurantPassword.encode(), salt)
-    print(hashed_password)
-    run_query("UPDATE restaurant SET (name, password, address, phone_num, bio, banner_url, profile_url, city) VALUES (?,?,?,?,?,?,?,?) WHERE id=?", [name, hashed_password, address, phoneNum, bio, bannerUrl, profileUrl, city])
-    return jsonify("Restaurant updated successfully"), 201
+    token = request.headers.get("Token")
+    if not token:
+        return jsonify ("Not authorized"), 401
+    else:
+        token_check = run_query("SELECT id FROM restaurant_session WHERE token=?", [token])
+        response = token_check[0]
+        restaurant_id = response[0]
+    if not restaurant_id:
+        return jsonify("Error updating restaurant information, invalid login session")
+    else:
+        data = request.json
+        name = data.get("name")
+        password = data.get("password")    
+        address = data.get("address")
+        phoneNum = data.get("phoneNum")
+        bio = data.get("bio")
+        bannerUrl = data.get("bannerUrl")
+        profileUrl = data.get("profileUrl")
+        city = data.get("city")
+        token_check = run_query("SELECT id FROM restaurant_session WHERE token=?", [token])
+        response = token_check[0]
+        restaurant_id = response[0]        
+        if name:
+            run_query("UPDATE restaurant SET name=? WHERE id=?", [name, restaurant_id])
+            return jsonify("Restaurant name updated successfully"), 201
+        if password:
+            restaurantPassword = password
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(restaurantPassword.encode(), salt)
+            print(hashed_password)
+            run_query("UPDATE restaurant SET password=? WHERE id=?", [hashed_password, restaurant_id])
+            return jsonify("Restaurant password updated successfully"), 201                        
+        if address:
+            run_query("UPDATE restaurant SET address=? WHERE id=?", [address, restaurant_id])
+            return jsonify("Restaurant address updated successfully"), 201            
+        if phoneNum:
+            run_query("UPDATE restaurant SET phone_num=? WHERE id=?", [phoneNum, restaurant_id])
+            return jsonify("Restaurant phone number updated successfully"), 201
+        if bio:
+            run_query("UPDATE restaurant SET bio=? WHERE id=?", [bio, restaurant_id])
+            return jsonify("Restaurant bio updated successfully"), 201
+        if city:
+            city_check = run_query("SELECT id FROM city WHERE name=?", [city])
+            if not city_check:
+                return jsonify("Error, must enter correct city name")            
+            else:
+                run_query("UPDATE restaurant SET city=? WHERE id=?", [city, restaurant_id])
+                return jsonify("Restaurant city updated successfully"), 201                
+        else:
+            return jsonify("Error updating restaurant")
